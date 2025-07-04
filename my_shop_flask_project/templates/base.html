@@ -1,0 +1,161 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>{% block title %}My Shop{% endblock %}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/main.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="homepage is-preload">
+    <div id="page-wrapper">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div id="flash-messages" role="alert" aria-live="assertive" style="position: fixed; top: 1rem; right: 1rem; z-index: 1000;">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 4px; background-color: #f0f0f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                  {{ message }}
+                  <button type="button" aria-label="Close message" onclick="this.parentElement.style.display='none';" style="background: none; border: none; font-size: 1.25rem; float: right; cursor: pointer;">&times;</button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Header -->
+        <section id="header">
+            <h1><a href="{{ url_for('main.home') }}">My Shop</a></h1>
+
+            {% if current_user.is_authenticated %}
+                <div style="text-align:center; padding: 10px;">
+                    <h3>Welcome, {{ current_user.name }}</h3>
+                </div>
+            {% endif %}
+
+            <!-- Navigation -->
+            <nav id="nav">
+                <ul>
+                    <li class="{{ 'current' if request.endpoint == 'main.home' else '' }}">
+                        <a href="{{ url_for('main.home') }}">Home</a>
+                    </li>
+                    <li class="{{ 'current' if request.endpoint == 'products.products' else '' }}">
+                        <a href="{{ url_for('products.products') }}">Products</a>
+                    </li>
+                    <li class="{{ 'current' if request.endpoint == 'cart.cart' else '' }}">
+                        <a href="{{ url_for('cart.cart') }}">Cart</a>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                        <li class="{{ 'current' if request.endpoint == 'orders.account' else '' }}">
+                            <a href="{{ url_for('orders.account') }}">My Account</a>
+                        </li>
+                        <li class="{{ 'current' if request.endpoint == 'auth.edit_profile' else '' }}">
+                            <a href="{{ url_for('auth.edit_profile') }}">Edit Profile</a>
+                        </li>
+
+                        {% if current_user.id == 1 %}
+                            <li>
+                                <a href="#">Admin ▾</a>
+                                <ul>
+                                    <li class="{{ 'current' if request.endpoint == 'admin.add_product' else '' }}">
+                                        <a href="{{ url_for('admin.add_product') }}">Add Product</a>
+                                    </li>
+                                    <li class="{{ 'current' if request.endpoint == 'admin.manage_products' else '' }}">
+                                        <a href="{{ url_for('admin.manage_products') }}">Manage Products</a>
+                                    </li>
+                                    <li class="{{ 'current' if request.endpoint == 'admin.admin_orders' else '' }}">
+                                        <a href="{{ url_for('admin.admin_orders') }}">Admin Orders</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="{{ 'current' if request.endpoint == 'auth.login' else '' }}">
+                            <a href="{{ url_for('auth.login') }}">Login</a>
+                        </li>
+                        <li class="{{ 'current' if request.endpoint == 'auth.register' else '' }}">
+                            <a href="{{ url_for('auth.register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+
+            <!-- Banner -->
+            {% block banner %}
+            <section id="banner">
+                <header>
+                    <h2>Welcome to My Shop</h2>
+                    <p>High quality products delivered fast to your door</p>
+                </header>
+            </section>
+            {% endblock %}
+
+            <!-- Intro (Highlights) -->
+            {% if self.intro()|trim %}
+                {% block intro %}{% endblock %}
+            {% endif %}
+        </section>
+
+        <!-- Main Content -->
+        <section id="main">
+            {% if self.content()|trim %}
+                <div class="box">
+                    <div class="inner">
+                        {% block content %}{% endblock %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if self.container()|trim %}
+                <div class="container">
+                    {% block container %}{% endblock %}
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Footer -->
+        <section id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <section>
+                            <h2>Contact Us</h2>
+                            <ul class="contact">
+                                <li><strong>Email:</strong> support@myshop.com</li>
+                                <li><strong>Phone:</strong> (800) 123-4567</li>
+                                <li><strong>Address:</strong> 123 Commerce Street, New York, NY</li>
+                            </ul>
+                        </section>
+                    </div>
+                    <div class="col-12">
+                        <div id="copyright">
+                            <ul class="links">
+                                <li>&copy;{{ current_year }} My Shop. All rights reserved.</li>
+                                <li>Design based on <a href="http://html5up.net">HTML5 UP</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='assets/js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.dropotron.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/browser.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/breakpoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/util.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart - My Shop{% endblock %}
+
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Your Shopping Cart</h2>
+        <p>Review your selected items and proceed to checkout</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <!-- Meta tag para CSRF Token -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
+{% block content %}
+<header>
+    <h2>Your Shopping Cart</h2>
+</header>
+
+{% if cart_items %}
+  <table style="width:100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 1px solid #ccc;">
+        <th align="left">Product</th>
+        <th align="center">Quantity</th>
+        <th align="right">Price</th>
+        <th align="right">Subtotal</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in cart_items %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td align="center">
+          <form action="{{ url_for('cart.update_quantity', product_id=item.id) }}" method="post" style="display: flex; gap: 5px; align-items: center;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
+            <button type="submit" class="button small">Update</button>
+          </form>
+        </td>
+        <td align="right">${{ '%.2f' % item.price }}</td>
+        <td align="right">${{ '%.2f' % (item.price * item.quantity) }}</td>
+        <td align="right">
+          <form action="{{ url_for('cart.remove_from_cart', product_id=item.id) }}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="button small alert">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="text-align: right; font-weight: bold; margin-top: 1rem;">
+    Total: ${{ '%.2f' % total }}
+  </p>
+
+  {% if not current_user.is_authenticated %}
+    <div class="alert alert-warning" style="margin-top: 1rem;">
+      ⚠️ You must <a href="{{ url_for('auth.login') }}">log in</a> before proceeding to checkout.<br>
+    </div>
+  {% endif %}
+
+  {% if current_user.is_authenticated and not profile_complete %}
+    <div class="alert alert-warning" style="margin-top: 1rem;">
+      ⚠️ You must <a href="{{ url_for('auth.edit_profile') }}">complete your profile</a> before proceeding to checkout.<br>
+      Required: phone, address, CPF, RG.
+    </div>
+  {% endif %}
+
+  <button id="checkout-button" class="button primary" style="margin-top: 1rem;"
+    {% if not profile_complete %}disabled title="Complete your profile first"{% endif %}>
+    Proceed to Checkout
+  </button>
+
+  <script src="https://js.stripe.com/v3/"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const checkoutButton = document.getElementById('checkout-button');
+      if (!checkoutButton) return;
+
+      const loggedIn = {{ logged_in|tojson }};
+      const profileComplete = {{ profile_complete|tojson }};
+      const stripePublicKey = "{{ stripe_public_key }}";
+
+      checkoutButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        if (!loggedIn) {
+          alert("You need to log in to proceed to checkout.");
+          window.location.href = "{{ url_for('auth.login') }}";
+          return;
+        }
+
+        if (!profileComplete) {
+          alert("Please complete your profile before checking out.");
+          window.location.href = "{{ url_for('auth.edit_profile') }}";
+          return;
+        }
+
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+          const response = await fetch('{{ url_for("cart.create_checkout_session") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({})
+          });
+
+          const session = await response.json();
+
+          if (session.error) {
+            alert(session.error);
+            return;
+          }
+
+          const stripe = Stripe(stripePublicKey);
+          const result = await stripe.redirectToCheckout({ sessionId: session.id });
+
+          if (result.error) {
+            alert(result.error.message);
+          }
+        } catch (error) {
+          console.error('Error during checkout:', error);
+          alert('An error occurred while processing your checkout. Please try again.');
+        }
+      });
+    });
+  </script>
+
+{% else %}
+  <p>Your cart is empty.</p>
+  <a href="{{ url_for('products.products') }}" class="button primary">Shop Now</a>
+{% endif %}
+{% endblock %}

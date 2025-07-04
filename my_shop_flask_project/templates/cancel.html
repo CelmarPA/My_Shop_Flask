@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Checkout Cancelled</h2>
+        <p>Your payment was not completed. You can review your cart and try again.</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block content %}
+  <h2>Payment Cancelled</h2>
+  <p>Your payment was cancelled. You can try again.</p>
+  <a href="{{ url_for('cart.cart') }}" class="button">Back to Cart</a>
+{% endblock %}

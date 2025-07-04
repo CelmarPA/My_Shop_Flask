@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Edit Your Profile</h2>
+        <p>Update your personal information to keep your account up to date</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block intro %}{% endblock %}
+
+{% block content %}
+<header>
+    <h2>Edit Your Profile</h2>
+</header>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="fields">
+        <!-- Nome (readonly) -->
+        <div class="field half">
+            <label>Name</label>
+            <input type="text" value="{{ current_user.name }}" readonly class="readonly-field">
+        </div>
+
+        <!-- Email (readonly) -->
+        <div class="field half">
+            <label>Email</label>
+            <input type="email" value="{{ current_user.email }}" readonly class="readonly-field">
+        </div>
+
+        <!-- CPF -->
+        <div class="field half">
+            <label>CPF</label>
+            {% if current_user.cpf %}
+                <input type="text" value="{{ current_user.cpf }}" readonly class="readonly-field">
+            {% else %}
+                <input type="text" name="cpf" required>
+            {% endif %}
+        </div>
+
+        <!-- RG -->
+        <div class="field half">
+            <label>RG</label>
+            {% if current_user.rg %}
+                <input type="text" value="{{ current_user.rg }}" readonly class="readonly-field">
+            {% else %}
+                <input type="text" name="rg" required>
+            {% endif %}
+        </div>
+
+
+        <!-- Campos editáveis -->
+        <div class="field half">
+            {{ form.phone.label }}
+            {{ form.phone(size=32) }}
+        </div>
+
+        <div class="field half">
+            {{ form.street.label }}
+            {{ form.street(size=64) }}
+        </div>
+
+        <div class="field half">
+            {{ form.number.label }}
+            {{ form.number(size=10) }}
+        </div>
+
+        <div class="field half">
+            {{ form.city.label }}
+            {{ form.city(size=32) }}
+        </div>
+
+        <div class="field half">
+            {{ form.state.label }}
+            {{ form.state(size=32) }}
+        </div>
+
+        <div class="field half">
+            {{ form.zip_code.label }}
+            {{ form.zip_code(size=16) }}
+        </div>
+
+        <div class="field half">
+            {{ form.country.label }}
+            {{ form.country(size=32) }}
+        </div>
+
+        <input type="submit" value="Save" class="button primary">
+    </div>
+</form>
+{% endblock %}

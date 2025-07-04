@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}My Shop{% endblock %}
+
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Welcome to My Shop</h2>
+        <p>High quality products delivered fast to your door</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block intro %}
+<section id="intro" class="container">
+    <div class="row">
+        <div class="col-4 col-12-medium">
+            <section class="first">
+                <i class="icon solid featured fa-shipping-fast"></i>
+                <header><h2>Fast Shipping</h2></header>
+                <p>Get your order quickly and safely at your doorstep.</p>
+            </section>
+        </div>
+        <div class="col-4 col-12-medium">
+            <section class="middle">
+                <i class="icon solid featured alt fa-dollar-sign"></i>
+                <header><h2>Great Prices</h2></header>
+                <p>Weekly deals and exclusive discounts available now.</p>
+            </section>
+        </div>
+        <div class="col-4 col-12-medium">
+            <section class="last">
+                <i class="icon solid featured alt2 fa-thumbs-up"></i>
+                <header><h2>Customer Satisfaction</h2></header>
+                <p>Guaranteed quality and friendly support every step of the way.</p>
+            </section>
+        </div>
+    </div>
+    <footer>
+        <ul class="actions">
+            <li><a href="{{ url_for('products.products') }}" class="button large">Browse Products</a></li>
+            <li><a href="#footer" class="button alt large">Contact Us</a></li>
+        </ul>
+    </footer>
+</section>
+{% endblock %}
+
+{% block content_wrapper %}{% endblock %}
+
+{% block container %}
+<section id="main">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <section>
+                    <header class="major">
+                        <h2>Featured Products</h2>
+                    </header>
+                    <div class="row">
+                      {% for product in top_products %}
+                      {% set avg_rating = (product.reviews | map(attribute='rating') | sum) / (product.reviews | length) if product.reviews else 0 %}
+                      <div class="col-4 col-6-medium col-12-small">
+                        <section class="box">
+                          <a href="#" class="image featured">
+                            <img src="{{ url_for('static', filename=product.img_url) }}" alt="{{ product.name }}" />
+                          </a>
+                          <header><h3>{{ product.name }}</h3></header>
+                          <p>{{ product.description }}</p>
+                          <p><strong>${{ '%.2f' % product.price }}</strong></p>
+
+                          <p>
+                            Average rating:
+                            {% for i in range(1, 6) %}
+                              {% if avg_rating >= i %}
+                                &#9733;
+                              {% elif avg_rating >= i - 0.5 %}
+                                &#9734;
+                              {% else %}
+                                &#9734;
+                              {% endif %}
+                            {% endfor %}
+                            ({{ '%.1f' % avg_rating }})
+                          </p>
+
+                          <footer>
+                            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="post" style="display:inline;">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <button type="submit" class="button alt">Buy Now</button>
+                            </form>
+                          </footer>
+                        </section>
+                      </div>
+                      {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.col-4 {
+  flex: 1 1 calc(33.333% - 1rem);
+  display: flex;
+}
+
+.box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+</style>
+{% endblock %}

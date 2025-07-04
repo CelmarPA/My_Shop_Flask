@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Admin - Manage Orders{% endblock %}
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Admin Panel: Manage Orders</h2>
+        <p>Track and update customer orders and delivery statuses</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block content %}
+<h2>Admin Panel - Manage Orders</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% for status in statuses %}
+  <h3>Status: {{ status }}</h3>
+
+  {% set orders = orders_by_status.get(status, []) %}
+  {% if orders %}
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 2rem;">
+      <thead>
+        <tr style="border-bottom:1px solid #ccc;">
+          <th>Order ID</th>
+          <th>User</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">{{ order.id }}</a></td>
+            <td>{{ order.user.name }}</td>
+            <td>{{ order.date.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td style="text-align:right;">${{ '%.2f' % order.total }}</td>
+            <td>
+              <form method="post" action="{{ url_for('admin.admin_orders') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="order_id" value="{{ order.id }}">
+                <select name="status">
+                  {% for s in statuses %}
+                    <option value="{{ s }}" {% if order.status.lower() == s.lower() %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="button small">Update</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No orders with status "{{ status }}"</p>
+  {% endif %}
+{% endfor %}
+
+{% endblock %}

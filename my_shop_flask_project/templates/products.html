@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}All Products - My Shop{% endblock %}
+
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Our Full Product List</h2>
+        <p>Browse all available products</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block intro %}{% endblock %}
+{% block content %}{% endblock %}
+
+{% block container %}
+<section id="main">
+    <div class="container">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-4 col-6-medium col-12-small">
+                <section class="box product-card">
+                    <a class="image featured">
+                        <img
+                            src="{{ url_for('static', filename=product.img_url) }}"
+                            alt="{{ product.name }}"
+                            class="product-img-clickable"
+                            data-id="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-description="{{ product.description }}"
+                            data-price="{{ '%.2f' | format(product.price) }}"
+                            data-img="{{ url_for('static', filename=product.img_url) }}"
+                            data-add-to-cart-url="{{ url_for('cart.add_to_cart', product_id=product.id) }}"
+                            style="cursor: pointer; max-height: 200px; object-fit: contain;">
+                    </a>
+                    <header><h3>{{ product.name }}</h3></header>
+                    <p>{{ product.description }}</p>
+                    <p><strong>${{ product.price }}</strong></p>
+
+                    <!-- Média de avaliações -->
+                    <div class="avg-rating">
+                      Average rating:
+                      {% set stars = avg_rating_by_product.get(product.id, 0) %}
+                      {% for i in range(1,6) %}
+                        {% if stars >= i %}
+                          &#9733; <!-- filled star -->
+                        {% elif stars > i - 1 %}
+                          &#9734; <!-- half or empty star -->
+                        {% else %}
+                          &#9734;
+                        {% endif %}
+                      {% endfor %}
+                      ({{ stars }})
+                    </div>
+
+                    <!-- Últimas 5 avaliações -->
+                    <div class="reviews">
+                      <h4>Latest Reviews:</h4>
+                      {% if first_5_reviews_by_product.get(product.id) %}
+                        <ul>
+                          {% for review in first_5_reviews_by_product[product.id] %}
+                            <li>
+                              <strong>{{ review.rating }} / 5</strong> - {{ review.comment|default('No comment') }}<br>
+                              <small>By {{ anonymize_name(review.user.name) if review.user else 'User #' ~ review.user_id }}</small>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <p>No reviews yet.</p>
+                      {% endif %}
+                    </div>
+
+                    <a href="{{ url_for('products.product_reviews', product_id=product.id) }}">See all reviews</a>
+
+                    <footer>
+                        <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="post">
+
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="redirect_to_cart" value="1">
+                          <button type="submit" class="button primary">Add to Cart</button>
+                        </form>
+                    </footer>
+                </section>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Modal -->
+<div id="product-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="position: relative;">
+    <span id="modal-close" style="cursor:pointer; position:absolute; top:0.5rem; right:1rem; font-size:1.5rem;">&times;</span>
+    <img id="modal-img" src="" alt="" style="max-width:100%; height:auto; margin-bottom:1rem;">
+    <h3 id="modal-name"></h3>
+    <p id="modal-description"></p>
+    <p><strong>Price: $<span id="modal-price"></span></strong></p>
+
+    <form id="buy-now-form" method="post" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="redirect_to_cart" value="1">
+      <button type="submit" class="button primary">Add to Cart</button>
+    </form>
+
+    <hr>
+
+    <div id="review-container" style="margin-top: 1rem;">
+      <!-- Aqui o conteúdo do formulário de review ou mensagens serão carregados via AJAX -->
+      Loading review info...
+    </div>
+  </div>
+</div>
+
+<script>
+  // Template da URL do review_form com product_id = 0 como placeholder
+  const reviewFormUrlTemplate = "{{ url_for('products.review_form', product_id=0) }}";
+
+  // Fecha o modal ao clicar no "X"
+  document.getElementById('modal-close').addEventListener('click', function() {
+    document.getElementById('product-modal').style.display = 'none';
+  });
+
+  // Fecha modal ao clicar fora da modal-content
+  window.addEventListener('click', function(event) {
+    const modal = document.getElementById('product-modal');
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  document.querySelectorAll('.product-img-clickable').forEach(img => {
+    img.addEventListener('click', function () {
+      const modal = document.getElementById('product-modal');
+
+      // Atualiza dados do modal
+      document.getElementById('modal-img').src = this.dataset.img;
+      document.getElementById('modal-name').textContent = this.dataset.name;
+      document.getElementById('modal-description').textContent = this.dataset.description;
+      document.getElementById('modal-price').textContent = this.dataset.price;
+
+      // Atualiza o action do formulário buy-now
+      const buyForm = document.getElementById('buy-now-form');
+      buyForm.action = new URL(this.dataset.addToCartUrl, window.location.origin).href;
+
+      // Limpa conteúdo do review para enquanto carrega
+      const reviewContainer = document.getElementById('review-container');
+      reviewContainer.innerHTML = "Loading review info...";
+
+      // Usa o template para construir a URL correta
+      const url = reviewFormUrlTemplate.replace('0', this.dataset.id);
+
+      // Busca conteúdo do review via AJAX/fetch
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          return response.json();
+        })
+        .then(data => {
+          reviewContainer.innerHTML = data.html;
+        })
+        .catch(() => {
+          reviewContainer.innerHTML = '<div style="color:red;">Could not load review info.</div>';
+        });
+
+      // Exibe modal
+      modal.style.display = 'block';
+    });
+  });
+</script>
+
+{% endblock %}

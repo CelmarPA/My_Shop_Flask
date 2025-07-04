@@ -1,0 +1,47 @@
+<style>
+.star-rating {
+  font-size: 2rem;
+  display: inline-flex;
+  flex-direction: row-reverse; /* para manter o efeito de hover correto */
+  justify-content: flex-start;
+}
+
+.star-rating input[type="radio"] {
+  display: none;
+}
+
+.star-rating label {
+  color: #ccc;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+  padding: 0 0.1rem;
+}
+
+/* Cor das estrelas selecionadas e ao passar o mouse */
+.star-rating input[type="radio"]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: gold;
+}
+
+</style>
+
+<form action="{{ url_for('products.add_review', product_id=product.id) }}" method="post" id="review-form">
+  <!-- Token CSRF obrigatório para proteção -->
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="star-rating" title="Rate from 1 to 5 stars">
+    {% for i in range(5, 0, -1) %}
+      <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+      <label for="star{{ i }}">&#9733;</label>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top: 0.5rem;">
+    <label for="comment">Comment (optional):</label><br>
+    <textarea name="comment" id="comment" rows="4" style="width: 100%;"></textarea>
+  </div>
+
+  <button type="submit" class="button primary" style="margin-top: 0.5rem;">Submit Review</button>
+</form>

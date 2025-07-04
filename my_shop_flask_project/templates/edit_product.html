@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+<section class="container">
+  <h2>Edit Product: {{ product.name }}</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}<br>
+    <label>{{ form.name.label }}</label>
+    {{ form.name(class="input") }}<br>
+
+    <label>{{ form.price.label }}</label>
+    {{ form.price(class="input") }}<br>
+
+    <label>{{ form.quantity.label }}</label>
+    {{ form.quantity(class="input") }}<br><br>
+
+    <label>{{ form.img_url.label }}</label>
+    {{ form.img_url(class="input") }}<br>
+
+    <label>{{ form.description.label }}</label>
+    {{ form.description(class="input") }}<br>
+
+    {{ form.submit(class="button primary") }}
+  </form>
+</section>
+{% endblock %}

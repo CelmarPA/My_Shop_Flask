@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}My Account{% endblock %}
+
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>My Account</h2>
+        <p>View your profile, past orders, and personal information</p>
+    </header>
+</section>
+{% endblock %}
+{% block intro %}{% endblock %}
+
+{% block content %}
+<header>
+    <h2>My Account</h2>
+</header>
+
+<h3>Your Information</h3>
+<ul style="list-style-type: none; padding-left: 0; margin-left: 0;">
+    <li><strong>Name:</strong> {{ user.name }}</li>
+    <li><strong>Email:</strong> {{ user.email }}</li>
+    {% if not user.cpf or not user.user_data %}
+        <li>
+            <p>Your profile is incomplete. Please
+            <a href="{{ url_for('auth.edit_profile') }}">complete your registration</a>.
+            </p>
+        </li>
+    {% else %}
+        <li><strong>CPF:</strong> {{ user.cpf }}</li>
+        <li><strong>RG:</strong> {{ user.rg }}</li>
+        {% if user.user_data %}
+            <li><strong>Address:</strong> {{ user.user_data.street }}, {{ user.user_data.number }}, {{ user.user_data.city }}, {{ user.user_data.state }}</li>
+            <li><strong>Phone:</strong> {{ user.user_data.phone }}</li>
+
+
+        {% else %}
+            <li><em>Address data missing</em></li>
+        {% endif %}
+    {% endif %}
+</ul>
+
+<h3>Your Orders</h3>
+{% if orders %}
+  {% for order in orders %}
+    <div class="box" style="margin-bottom: 2rem;">
+      <h3>Order #{{ order.id }}</h3>
+      <p><strong>Date:</strong> {{ order.date.strftime('%d/%m/%Y %H:%M') if order.date else 'N/A' }}</p>
+      <p><strong>Status:</strong> {{ order.status }}</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <caption>Order #{{ order.id }} Details</caption>
+        <thead>
+          <tr style="border-bottom: 1px solid #ccc;">
+            <th scope="col" align="left">Product</th>
+            <th scope="col" align="center">Quantity</th>
+            <th scope="col" align="right">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items %}
+          <tr>
+            <td>{{ item.product.name }}</td>
+            <td align="center">{{ item.quantity }}</td>
+            <td align="right">${{ '%.2f' % item.price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p style="text-align: right; margin-top: 0.5rem;"><strong>Total:</strong> ${{ '%.2f' % order.total }}</p>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>You haven't placed any orders yet.</p>
+{% endif %}
+{% endblock %}

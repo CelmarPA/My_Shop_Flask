@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product{% endblock %}
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Admin Panel: Add Product</h2>
+        <p>Only administrators can add new products to the catalog</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block content %}
+<form action="{{ url_for('admin.add_product') }}" method="POST">
+  {{ form.hidden_tag() }}
+  <p>{{ form.name.label }}<br>{{ form.name(size=32) }}</p>
+  <p>{{ form.price.label }}<br>{{ form.price(size=10) }}</p>
+  <p>{{ form.description.label }}<br>{{ form.description(size=64) }}</p>
+  <p>{{ form.img_url.label }}<br>{{ form.img_url(size=64) }}</p>
+  <p>{{ form.quantity.label }}<br>{{ form.quantity() }}</p>
+  <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Reviews for {{ product.name }}{% endblock %}
+
+{% block content %}
+<h2>Reviews for {{ product.name }}</h2>
+
+<div class="avg-rating">
+  Average rating:
+  {% set stars = avg_rating|round(0, 'floor') %}
+  {% for i in range(1, 6) %}
+    {% if i <= stars %}
+      <span style="color: gold;">&#9733;</span> {# full star ★ #}
+    {% else %}
+      <span style="color: #ccc;">&#9734;</span> {# empty star ☆ #}
+    {% endif %}
+  {% endfor %}
+  ({{ stars }})
+</div>
+
+<ul>
+  {% for review in reviews %}
+    <li>
+      <strong>{{ review.rating }} / 5</strong> - {{ review.comment|default('No comment') }}<br>
+      <small>By
+        {% if review.user %}
+          {{ anonymize_name(review.user.name) }}
+        {% else %}
+          User #{{ review.user_id }}
+        {% endif %}
+      </small>
+    </li>
+  {% else %}
+    <li>No reviews yet.</li>
+  {% endfor %}
+</ul>
+
+<a href="{{ url_for('products.products') }}">Back to products</a>
+{% endblock %}

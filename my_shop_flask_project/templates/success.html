@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block banner %}
+<section id="banner">
+    <header>
+        <h2>Thank You for Your Purchase!</h2>
+        <p>Your order was placed successfully. A confirmation email has been sent.</p>
+    </header>
+</section>
+{% endblock %}
+
+{% block title %}Order Success{% endblock %}
+
+{% block content %}
+  <header>
+    <h1>Thank you for your purchase!</h1>
+    <p>Your order has been completed successfully.</p>
+  </header>
+
+  <a href="{{ url_for('orders.account') }}" class="button">View My Orders</a>
+{% endblock %}
